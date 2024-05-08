@@ -204,7 +204,7 @@ const Profile = () => {
                         <div className="flex flex-col">
                           <p>UNIT</p>
                           <input
-                            name=""
+                            name="unit"
                             id=""
                             className="border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
                             value={selectedItem.unit}

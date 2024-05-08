@@ -20,8 +20,6 @@ const Popup = () => {
     const { name, value } = e.target;
     if ( name == "type" || value >= 0)
     setData({
-
-
       ...data,
       [name]: value
     })
