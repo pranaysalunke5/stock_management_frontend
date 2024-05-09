@@ -60,6 +60,8 @@ const Home = () => {
 
   useEffect(() => {
     getData();
+    
+    
   }, []);
 
   const handleSelectChange = (selectedOption) => {

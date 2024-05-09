@@ -3,10 +3,16 @@ import Select from "react-select";
 import axios from "axios";
 
 const Home = () => {
+  const [checkbox, setCheckbox] = useState(false);
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [popup, setPopup] = useState(false);
+  const [deletPop, setDeletePop] = useState(false);
+  const [selectIndex, setSelectIndex] = useState([]);
   const [userData, setUserData] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [modifiedData, setModifiedData] = useState([]);
+  const [allStock, setAllStock] = useState([]);
+  const [errors, setErrors] = useState({});
   const [data, setData] = useState({
     name: "",
     price: "",
@@ -16,9 +22,6 @@ const Home = () => {
     sku: "",
   });
 
-  const [allStock, setAllStock] = useState([]);
-  const [errors, setErrors] = useState({});
-  
   const changeHandler = (e) => {
     const { name, value } = e.target;
     setData({
@@ -69,6 +72,10 @@ const Home = () => {
       name: selectedOption.label,
       sku: selectedOption.sku,
     });
+  };
+
+  const confirmDelete = () => {
+    setDeletePop(!deletPop);
   };
 
   const viewForm = () => {
@@ -169,54 +176,76 @@ const Home = () => {
       sku: foundProduct.sku,
     });
   };
-
-  const deleteProduct = (productId) => {
+  const deleteProduct = (selectIndex) => {
     axios
-      .delete(`http://localhost:5000/api/stock/${productId}`)
+      .delete(`http://localhost:5000/api/stock/${selectIndex}`)
       .then((res) => {
         console.log("Product deleted successfully:", res.data);
         getData();
+        setDeletePop(false);
       })
       .catch((err) => {
         console.error("Error deleting product:", err);
       });
   };
-  // console.log(modifiedData)
 
+  const handleCloseModal = () => {
+    setDeletePop(false);
+  };
+
+  const handleCheckboxClick = () => {
+    setCheckbox(!checkbox);
+    setShowDeleteButton(!showDeleteButton);
+  };
+
+  const [selectedIndex , setSelectedIndex] = useState([])
+
+  const selectProducts = (selectProducts) => {
+
+  }
   return (
     <>
       <div className="w-full relative p-4 flex flex-col gap-4">
-        <div className="flex justify-between bg-gray-50">
+        <div className="flex justify-between w-full ">
           <p className="text-[16px] font-semibold">
             All Products {modifiedData.length}
           </p>
-          <div className="flex justify-between w-[14%] gap-3 items-center">
-            <button className="bg-white p-2 rounded-[4px] ">Filters</button>
+          <div className="flex w-[28%] gap-3 justify-end">
+            {showDeleteButton && (
+              <button className="text-[white] font-[400] text-[14px] bg-[red] rounded-[8px] px-[10px] ">
+                Delete
+              </button>
+            )}
+
             <button
-              className="bg-blue-500 p-2 rounded-[4px] text-white"
+              className="bg-white  p-2 rounded-4px"
+              onClick={handleCheckboxClick}
+            >
+              {checkbox ? "Cancel" : "Select"}
+            </button>
+
+            <button
+              className="bg-blue-500 p-2 text-14px rounded-4px text-white"
               onClick={viewForm}
             >
-              Add New User
+              Add New Product
             </button>
           </div>
         </div>
 
         <div className="shadow-md sm:rounded-lg w-full">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-500 uppercase bg-gray-50  dark:text-gray-400">
+          <table className="w-full text-sm text-left rtl:text-right text-gray-500  dark:text-gray-400">
+            <thead className="text-xs text-gray-500 uppercase bg-gray-50  dark:text-gray-400 p-1 items-center">
               <tr>
                 <th scope="col" className="p-4">
                   <div className="flex items-center">
-                    <input
-                      id="checkbox-all-search"
-                      type="checkbox"
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                    />
-                    <label className="sr-only">checkbox</label>
+                    {checkbox ? <input type="checkbox"
+                    onClick={()=>{selectProducts(selectIndex)}}
+                    /> : "No"}
                   </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-gray-900 ">
-                  Product name
+                  {checkbox ? "Select All" : "Product name"}
                 </th>
                 <th scope="col" className="px-6 py-3 text-gray-900 ">
                   SKU
@@ -224,7 +253,6 @@ const Home = () => {
                 <th scope="col" className="px-6 py-3 text-gray-900 ">
                   <select
                     // value={data.type}
-                    
                     name="type"
                     onChange={(e) => {
                       setModifiedData(
@@ -249,11 +277,13 @@ const Home = () => {
               </tr>
             </thead>
 
-            <tbody>
+             <tbody>
               {modifiedData?.map((item, index) => (
                 <>
-                  <tr className="bg-white border-b  ">
-                    <td className="w-4 p-4">{index + 1}</td>
+                  <tr key={index} className="bg-white border-b  ">
+                    <td className="w-4 p-4">
+                      {checkbox ? <input type="checkbox" /> : index + 1}
+                    </td>
                     <th
                       scope="row"
                       className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
@@ -278,8 +308,10 @@ const Home = () => {
                       <a
                         href="#"
                         className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
+                      
                         onClick={() => {
-                          deleteProduct(item._id);
+                          confirmDelete();
+                          setSelectIndex(item._id);
                         }}
                       >
                         Remove
@@ -390,6 +422,44 @@ const Home = () => {
                       Save
                     </button>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      {deletPop && (
+        <>
+          <div className="fixed top-0 left-0 w-full h-full bg-opacity-50 bg-gray-500 backdrop-blur-sm flex justify-center items-center">
+            <div className="bg-white p-6 rounded-xl flex flex-col gap-4 w-[20%] ">
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <p className="text-[14px]">
+                    Are you sure to delete this product
+                  </p>
+
+                  <button
+                    onClick={handleCloseModal}
+                    className="bg-white px-3 py-1 rounded-md w-[15%] flex justify-end"
+                  >
+                    <img src="/images/cross.png" alt="" className="h-3 w-3" />
+                  </button>
+                </div>
+                <div className="w-[100%] flex justify-between">
+                  <button
+                    className="text-[white] font-[400] text-[14px] bg-[red] rounded-[8px] px-[10px] py-[5px]"
+                    onClick={handleCloseModal}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="text-[white] text-[14px] font-[400] bg-[green] rounded-[8px] px-[10px] py-[2px]"
+                    onClick={() => {
+                      deleteProduct(selectIndex);
+                    }}
+                  >
+                    Confirm
+                  </button>
                 </div>
               </div>
             </div>
