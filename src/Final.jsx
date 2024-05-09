@@ -197,12 +197,28 @@ const Home = () => {
     setCheckbox(!checkbox);
     setShowDeleteButton(!showDeleteButton);
   };
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedIndexes, setSelectedIndexes] = useState([]);
+  console.log(202, selectedIndexes);
 
-  const [selectedIndex , setSelectedIndex] = useState([])
+  const toggleSelect = (index) => {
+    if (selectedIndexes.includes(index)) {
+      setSelectedIndexes(selectedIndexes.filter((i) => i !== index));
+    } else {
+      setSelectedIndexes([...selectedIndexes, index]);
+    }
+  };
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedIndexes([]);
+    } else {
+      const selectedIds = modifiedData.map(item => item._id);
+      setSelectedIndexes(selectedIds);
+    }
+    setSelectAll(!selectAll);
+  };
 
-  const selectProducts = (selectProducts) => {
-
-  }
+  
   return (
     <>
       <div className="w-full relative p-4 flex flex-col gap-4">
@@ -212,7 +228,12 @@ const Home = () => {
           </p>
           <div className="flex w-[28%] gap-3 justify-end">
             {showDeleteButton && (
-              <button className="text-[white] font-[400] text-[14px] bg-[red] rounded-[8px] px-[10px] ">
+              <button
+                onClick={() => {
+                  deleteProduct(selectIndex);
+                }}
+                className="text-[white] font-[400] text-[14px] bg-[red] rounded-[8px] px-[10px] "
+              >
                 Delete
               </button>
             )}
@@ -239,9 +260,15 @@ const Home = () => {
               <tr>
                 <th scope="col" className="p-4">
                   <div className="flex items-center">
-                    {checkbox ? <input type="checkbox"
-                    onClick={()=>{selectProducts(selectIndex)}}
-                    /> : "No"}
+                    {checkbox ? (
+                      <input
+                        type="checkbox"
+                        // checked={checkbox}
+                        onChange={toggleSelectAll}
+                      />
+                    ) : (
+                      "No"
+                    )}
                   </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-gray-900 ">
@@ -277,12 +304,20 @@ const Home = () => {
               </tr>
             </thead>
 
-             <tbody>
+            <tbody>
               {modifiedData?.map((item, index) => (
                 <>
                   <tr key={index} className="bg-white border-b  ">
                     <td className="w-4 p-4">
-                      {checkbox ? <input type="checkbox" /> : index + 1}
+                      {checkbox ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedIndexes.includes(item._id)}
+                          onChange={() => toggleSelect(item._id)}
+                        />
+                      ) : (
+                        index + 1
+                      )}
                     </td>
                     <th
                       scope="row"
@@ -308,7 +343,6 @@ const Home = () => {
                       <a
                         href="#"
                         className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                      
                         onClick={() => {
                           confirmDelete();
                           setSelectIndex(item._id);
